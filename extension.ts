@@ -28,58 +28,39 @@ function linesCharLength(state: EditorState): number {
   return state.doc.lines.toString().length;
 }
 
-const absoluteLineNumberGutter = gutter({
-  lineMarker: (view, line) => {
-    const lineNo = view.state.doc.lineAt(line.from).number;
-    const charLength = linesCharLength(view.state);
-    const absoluteLineNo = new Marker(lineNo.toString().padStart(charLength, " "));
-    const cursorLine = view.state.doc.lineAt(
-      view.state.selection.asSingle().ranges[0].to
-    ).number;
-
-    if (lineNo === cursorLine) {
-      return absoluteLineNo;
-    }
-
-    return null;
-  },
-  initialSpacer: (view: EditorView) => {
-    const spacer = new Marker("0".repeat(linesCharLength(view.state)));
-    return spacer;
-  },
-});
-
 function relativeLineNumbers(lineNo: number, state: EditorState) {
   const charLength = linesCharLength(state);
-  const blank = " ".padStart(charLength, " ");
   if (lineNo > state.doc.lines) {
-    return blank;
+    return " ".padStart(charLength, " ");
   }
+  
   const cursorLine = state.doc.lineAt(
     state.selection.asSingle().ranges[0].to
   ).number;
-  
 
-  const start = Math.min( state.doc.line(lineNo).from, 
-                          state.selection.asSingle().ranges[0].to)
+  const start = Math.min(state.doc.line(lineNo).from, 
+                         state.selection.asSingle().ranges[0].to);
 
-  const stop = Math.max( state.doc.line(lineNo).from, 
-                          state.selection.asSingle().ranges[0].to)
+  const stop = Math.max(state.doc.line(lineNo).from, 
+                        state.selection.asSingle().ranges[0].to);
 
-  const folds = foldedRanges(state)
-  let foldedCount = 0
+  const folds = foldedRanges(state);
+  let foldedCount = 0;
   folds.between(start, stop, (from, to) => {
-    let rangeStart = state.doc.lineAt(from).number
-    let rangeStop = state.doc.lineAt(to).number
-    foldedCount += rangeStop - rangeStart
-  })
+    let rangeStart = state.doc.lineAt(from).number;
+    let rangeStop = state.doc.lineAt(to).number;
+    foldedCount += rangeStop - rangeStart;
+  });
 
   if (lineNo === cursorLine) {
-    return blank;
+    // Show absolute line number for current line
+    return lineNo.toString().padStart(charLength, " ");
   } else {
+    // Show relative line number for other line
     return (Math.abs(cursorLine - lineNo) - foldedCount).toString().padStart(charLength, " ");
   }
 }
+
 // This shows the numbers in the gutter
 const showLineNumbers = relativeLineNumberGutter.of(
   lineNumbers({ formatNumber: relativeLineNumbers })
@@ -100,5 +81,5 @@ const lineNumbersUpdateListener = EditorView.updateListener.of(
 );
 
 export function lineNumbersRelative(): Extension {
-  return [absoluteLineNumberGutter, showLineNumbers, lineNumbersUpdateListener];
+  return [showLineNumbers, lineNumbersUpdateListener];
 }
