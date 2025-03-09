@@ -3,7 +3,7 @@
 	"name": "relativenumber",
 	"version": "3.14",
 	"minAppVersion": "1.4.16",
-	"description": "Enables relative line numbers in editor mode",
+	"description": "Relative line number",
 	"author": "hzao",
 	"authorUrl": "hezeao.github.io",
 	"isDesktopOnly": false
